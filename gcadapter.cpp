@@ -26,10 +26,10 @@ namespace GCAdapter
         ADAPTER_DETECTED    = 1,
     };
 
-    ControllerStatus controller_status[MAX_N64_CONTROLLERS] = {{false, true, false, {}},
-                                                               {false, true, false, {}},
-                                                               {false, true, false, {}},
-                                                               {false, true, false, {}}};
+    ControllerStatus controller_status[MAX_N64_CONTROLLERS] = {{false, true, false,false, {}},
+                                                               {false, true, false,false, {}},
+                                                               {false, true, false,false, {}},
+                                                               {false, true, false,false, {}}};
 
     static int                   s_status                               = NO_ADAPTER_DETECTED;
     static libusb_device_handle* s_handle                               = nullptr;

@@ -44,6 +44,7 @@ static void startGCApp()
             GCAdapter::controller_status[i].enabled    = settings.value("controller" + QString::number(i) + "/enabled").toBool();
             GCAdapter::controller_status[i].l_as_z     = settings.value("controller" + QString::number(i) + "/l_as_z").toBool();
             GCAdapter::controller_status[i].vcDeadzone = settings.value("controller" + QString::number(i) + "/vcdeadzone").toBool();
+            GCAdapter::controller_status[i].zeldaCKeys = settings.value("controller" + QString::number(i) + "/zeldackeys").toBool();
         }
 
         gc = new GCApp;
@@ -115,16 +116,17 @@ EXPORT void CALL GetKeys(int32_t Control, BUTTONS* Keys)
     Keys->U_DPAD       = (gcpad.button & PAD_BUTTON_UP) != 0;
     Keys->R_DPAD       = (gcpad.button & PAD_BUTTON_RIGHT) != 0;
     Keys->D_DPAD       = (gcpad.button & PAD_BUTTON_DOWN) != 0;
-    Keys->Z_TRIG       = (gcpad.button & PAD_TRIGGER_Z) != 0;
     Keys->R_TRIG       = (gcpad.button & PAD_TRIGGER_R) != 0;
 
-    if (GCAdapter::controller_status[Control].l_as_z)
+    if (GCAdapter::controller_status[Control].l_as_z || GCAdapter::controller_status[Control].zeldaCKeys)
+
     {
-        Keys->Z_TRIG = Keys->Z_TRIG | ((gcpad.button & PAD_TRIGGER_L) != 0);
+        Keys->Z_TRIG = ((gcpad.button & PAD_TRIGGER_L) != 0);
     }
     else
     {
         Keys->L_TRIG = (gcpad.button & PAD_TRIGGER_L) != 0;
+        Keys->Z_TRIG = (gcpad.button & PAD_TRIGGER_Z) != 0;
     }
 
     Keys->Y_AXIS = (int8_t) gcpad.stickX - GCAdapter::controller_status[Control].origin.sX;
@@ -139,11 +141,21 @@ EXPORT void CALL GetKeys(int32_t Control, BUTTONS* Keys)
     int8_t cstickX = (int8_t) gcpad.substickX - GCAdapter::controller_status[Control].origin.cX;
     int8_t cstickY = (int8_t) gcpad.substickY - GCAdapter::controller_status[Control].origin.cY;
 
-    Keys->L_CBUTTON = (cstickX < -DEADZONE);
-    Keys->R_CBUTTON = (cstickX > DEADZONE);
+    if (GCAdapter::controller_status[Control].zeldaCKeys) {
+        Keys->L_CBUTTON = (cstickX < -DEADZONE) || ((gcpad.button & PAD_BUTTON_Y) != 0);
+        Keys->R_CBUTTON = (cstickX > DEADZONE) || ((gcpad.button & PAD_BUTTON_X) != 0);
 
-    Keys->D_CBUTTON = (cstickY < -DEADZONE);
-    Keys->U_CBUTTON = (cstickY > DEADZONE);
+        Keys->D_CBUTTON = (cstickY < -DEADZONE) || ((gcpad.button & PAD_TRIGGER_Z) != 0);
+        Keys->U_CBUTTON = (cstickY > DEADZONE);
+    }
+    else
+    {
+        Keys->L_CBUTTON = (cstickX < -DEADZONE);
+        Keys->R_CBUTTON = (cstickX > DEADZONE);
+
+        Keys->D_CBUTTON = (cstickY < -DEADZONE);
+        Keys->U_CBUTTON = (cstickY > DEADZONE);
+    }
 }
 
 EXPORT void CALL InitiateControllers(CONTROL_INFO ControlInfo)
@@ -192,16 +204,16 @@ EXPORT void CALL ReadController(int Control, uint8_t* Command)
             pad.U_DPAD       = (gcpad.button & PAD_BUTTON_UP) != 0;
             pad.R_DPAD       = (gcpad.button & PAD_BUTTON_RIGHT) != 0;
             pad.D_DPAD       = (gcpad.button & PAD_BUTTON_DOWN) != 0;
-            pad.Z_TRIG       = (gcpad.button & PAD_TRIGGER_Z) != 0;
             pad.R_TRIG       = (gcpad.button & PAD_TRIGGER_R) != 0;
 
-            if (GCAdapter::controller_status[Control].l_as_z)
+            if (GCAdapter::controller_status[Control].l_as_z || GCAdapter::controller_status[Control].zeldaCKeys)
             {
-                pad.Z_TRIG = pad.Z_TRIG | ((gcpad.button & PAD_TRIGGER_L) != 0);
+                pad.Z_TRIG =  ((gcpad.button & PAD_TRIGGER_L) != 0);
             }
             else
             {
                 pad.L_TRIG = (gcpad.button & PAD_TRIGGER_L) != 0;
+                pad.Z_TRIG = (gcpad.button & PAD_TRIGGER_Z) != 0;
             }
 
             pad.Y_AXIS = (int8_t) gcpad.stickX - GCAdapter::controller_status[Control].origin.sX;
@@ -215,13 +227,22 @@ EXPORT void CALL ReadController(int Control, uint8_t* Command)
 
             int8_t cstickX = (int8_t) gcpad.substickX - GCAdapter::controller_status[Control].origin.cX;
             int8_t cstickY = (int8_t) gcpad.substickY - GCAdapter::controller_status[Control].origin.cY;
+            if (GCAdapter::controller_status[Control].zeldaCKeys)
+            {
+               pad.L_CBUTTON = (cstickX < -DEADZONE) || ((gcpad.button & PAD_BUTTON_Y) != 0);
+                pad.R_CBUTTON = (cstickX > DEADZONE) || ((gcpad.button & PAD_BUTTON_X) != 0);
 
-            pad.L_CBUTTON = (cstickX < -DEADZONE);
-            pad.R_CBUTTON = (cstickX > DEADZONE);
+                pad.D_CBUTTON = (cstickY < -DEADZONE) || ((gcpad.button & PAD_TRIGGER_Z) != 0);
+                pad.U_CBUTTON = (cstickY > DEADZONE);
+            }
+            else
+            {
+                pad.L_CBUTTON = (cstickX < -DEADZONE);
+                pad.R_CBUTTON = (cstickX > DEADZONE);
 
-            pad.D_CBUTTON = (cstickY < -DEADZONE);
-            pad.U_CBUTTON = (cstickY > DEADZONE);
-
+                pad.D_CBUTTON = (cstickY < -DEADZONE);
+                pad.U_CBUTTON = (cstickY > DEADZONE);
+            }
             *val = pad.Value;
             break;
         }

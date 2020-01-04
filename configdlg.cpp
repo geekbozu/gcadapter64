@@ -26,12 +26,14 @@ ConfigDialog::ConfigDialog(QWidget* parent) : QDialog(parent)
 
     QLabel* enabledLabel = new QLabel(tr("Enabled"));
     QLabel* switchLabel  = new QLabel(tr("Use L as Z"));
-    QLabel* vcLabel      = new QLabel(tr("Use generic VC deadzone mapping (inaccurate)"));
+    QLabel* vcLabel      = new QLabel(tr("VC Deadzone(Inaccurate)"));
+    QLabel* zcLabel = new QLabel(tr("Zelda C buttons"));
     vcLabel->setWordWrap(true);
 
     menu->addWidget(enabledLabel, 0, 1);
     menu->addWidget(switchLabel, 0, 2);
     menu->addWidget(vcLabel, 0, 3);
+    menu->addWidget(zcLabel, 0, 4);
 
     for (uint32_t i = 0; i < 4; i++)
     {
@@ -46,10 +48,14 @@ ConfigDialog::ConfigDialog(QWidget* parent) : QDialog(parent)
         vcDeadzone[i] = new QCheckBox;
         vcDeadzone[i]->setChecked(GCAdapter::controller_status[i].vcDeadzone);
 
+        zeldaCKeys[i] = new QCheckBox;
+        zeldaCKeys[i]->setChecked(GCAdapter::controller_status[i].zeldaCKeys);
+
         menu->addWidget(cLabel, i + 1, 0);
         menu->addWidget(cEnabled[i], i + 1, 1);
         menu->addWidget(cSwap[i], i + 1, 2);
         menu->addWidget(vcDeadzone[i], i + 1, 3);
+        menu->addWidget(zeldaCKeys[i], i + 1, 4);
     }
 
     menuGroupBox->setLayout(menu);
@@ -95,10 +101,12 @@ void ConfigDialog::saveAndClose()
         GCAdapter::controller_status[i].enabled    = cEnabled[i]->isChecked();
         GCAdapter::controller_status[i].l_as_z     = cSwap[i]->isChecked();
         GCAdapter::controller_status[i].vcDeadzone = vcDeadzone[i]->isChecked();
+        GCAdapter::controller_status[i].zeldaCKeys = zeldaCKeys[i]->isChecked();
 
         settings.setValue("controller" + QString::number(i) + "/enabled", GCAdapter::controller_status[i].enabled);
         settings.setValue("controller" + QString::number(i) + "/l_as_z", GCAdapter::controller_status[i].l_as_z);
         settings.setValue("controller" + QString::number(i) + "/vcdeadzone", GCAdapter::controller_status[i].vcDeadzone);
+        settings.setValue("controller" + QString::number(i) + "/zeldackeys", GCAdapter::controller_status[i].zeldaCKeys);
     }
 
     close();

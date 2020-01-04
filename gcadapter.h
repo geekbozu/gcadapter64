@@ -24,6 +24,7 @@ struct ControllerStatus
     bool   enabled;
     bool   l_as_z;
     bool   vcDeadzone;
+    bool   zeldaCKeys;
     Origin origin;
 };
 
