@@ -78,7 +78,8 @@ EXPORT void CALL DllAbout(void* hParent)
                               "Ported from <a href='https://github.com/dolphin-emu/dolphin/blob/master/Source/Core/InputCommon/GCAdapter.cpp'>Dolphin</a><br/>"
                               "<br/>"
                               "Licensed under GPLv2+<br/>"
-                              "Source code available at <a href='https://github.com/r52/gcadapter64'>GitHub</a>";
+                              "Source code available at <a href='https://github.com/geekbozu/gcadapter64'>GitHub</a></br>"
+                              "Forked From <a href='https://github.com/r52/gcadapter64'>GitHub</a>";
 
     QMessageBox::about(nullptr, "About GCAdapter64", aboutMsg);
     gc->app.processEvents();
@@ -145,8 +146,9 @@ EXPORT void CALL GetKeys(int32_t Control, BUTTONS* Keys)
         Keys->L_CBUTTON = (cstickX < -DEADZONE) || ((gcpad.button & PAD_BUTTON_Y) != 0);
         Keys->R_CBUTTON = (cstickX > DEADZONE) || ((gcpad.button & PAD_BUTTON_X) != 0);
 
-        Keys->D_CBUTTON = (cstickY < -DEADZONE) || ((gcpad.button & PAD_TRIGGER_Z) != 0);
+        Keys->D_CBUTTON = ((gcpad.button & PAD_TRIGGER_Z) != 0);
         Keys->U_CBUTTON = (cstickY > DEADZONE);
+        Keys->L_TRIG    = (cstickY < -DEADZONE);
     }
     else
     {
@@ -160,6 +162,7 @@ EXPORT void CALL GetKeys(int32_t Control, BUTTONS* Keys)
 
 EXPORT void CALL InitiateControllers(CONTROL_INFO ControlInfo)
 {
+    startGCApp();
     GCAdapter::Init();
 
     for (uint32_t i = 0; i < 4; i++)
@@ -232,8 +235,9 @@ EXPORT void CALL ReadController(int Control, uint8_t* Command)
                pad.L_CBUTTON = (cstickX < -DEADZONE) || ((gcpad.button & PAD_BUTTON_Y) != 0);
                 pad.R_CBUTTON = (cstickX > DEADZONE) || ((gcpad.button & PAD_BUTTON_X) != 0);
 
-                pad.D_CBUTTON = (cstickY < -DEADZONE) || ((gcpad.button & PAD_TRIGGER_Z) != 0);
+                pad.D_CBUTTON =((gcpad.button & PAD_TRIGGER_Z) != 0);
                 pad.U_CBUTTON = (cstickY > DEADZONE);
+                pad.L_TRIG = (cstickY < -DEADZONE);
             }
             else
             {
